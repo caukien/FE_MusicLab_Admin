@@ -116,6 +116,7 @@
   flex: 1;
   height: 300px;
   text-align: center;
+  width: 100px;
 }
 
 .music-player {
@@ -157,4 +158,74 @@
   flex: 1;
   margin-left: 20px;
   color: #173a1a;
+}
+
+/* css song detail */
+
+.song-detail-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.song-detail-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.song-detail-info {
+  display: flex;
+  align-items: center;
+}
+
+.play-pause-btn {
+  font-size: 24px;
+  margin-right: 20px;
+}
+
+.song-name {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.song-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.play-pause-btn {
+  font-size: 24px;
+  margin-right: 20px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.audio-control-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 20px;
+  margin-top: 20px;
+}
+
+.audio-wave-container {
+  flex-grow: 1;
+  margin: 0 15px;
+  /* height: 40px; */
+}
+
+.current-time,
+.total-time {
+  font-size: 14px;
+  color: white;
+  min-width: 40px;
+  text-align: center;
 }

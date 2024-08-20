@@ -267,7 +267,7 @@ const EditAlbumModal = ({
   const fetchUserSongs = debounce((search) => {
     axios
       .get(`${API_URL}song/GetAllByUserId/${userId}?search=${search}`)
-      .then((response) => setSongs(response.data))
+      .then((response) => setSongs(response.data.songs))
       .catch(() => message.error("Failed to load songs"));
   }, 300);
 

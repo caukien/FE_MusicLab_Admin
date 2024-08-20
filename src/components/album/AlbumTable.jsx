@@ -9,7 +9,6 @@ import {
 import {
   Button,
   message,
-  Pagination,
   Space,
   Spin,
   Table,
@@ -26,7 +25,6 @@ import { useNavigate } from "react-router-dom";
 
 const token = getToken();
 const API_URL = import.meta.env.VITE_API_URL;
-const userId = getUserIdFromToken();
 
 const AlbumTable = () => {
   const [albums, setAlbums] = useState([]);
@@ -36,6 +34,7 @@ const AlbumTable = () => {
     pageSize: 5,
     total: 0,
   });
+  const [userId, setUserId] = useState(getUserIdFromToken());
   const [editingAlbum, setEditingAlbum] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedAlbumId, setSelectedAlbumId] = useState(null);
@@ -49,13 +48,18 @@ const AlbumTable = () => {
     }
   }, [navigate]);
 
-  const fetchAlbums = async () => {
+  const fetchAlbums = async (pageNumber = 1, pageSize = 5) => {
     try {
       const response = await axios.get(
-        `${API_URL}album/GetAllByUserId/${userId}`
+        `${API_URL}album/GetAllByUserId/${userId}?PageNumber=${pageNumber}&PageSize=${pageSize}`
       );
-      setAlbums(response.data);
-      setPagination((prev) => ({ ...prev, total: response.data.length }));
+      const { totalPages, currentPage, albums } = response.data;
+      setAlbums(albums);
+      setPagination({
+        current: currentPage,
+        pageSize,
+        total: totalPages * pageSize,
+      });
     } catch (error) {
       message.error("Failed to load albums");
     } finally {
@@ -63,8 +67,11 @@ const AlbumTable = () => {
     }
   };
   useEffect(() => {
-    fetchAlbums();
-  }, []);
+    if (token) {
+      setUserId(getUserIdFromToken());
+      fetchAlbums(1);
+    }
+  }, [token]);
 
   const handleEdit = (record) => {
     setEditingAlbum(record);
@@ -99,7 +106,7 @@ const AlbumTable = () => {
   };
 
   const handleTableChange = (pagination) => {
-    setPagination(pagination);
+    fetchAlbums(pagination.current, pagination.pageSize);
   };
 
   const handleAddAlbum = () => {
@@ -113,10 +120,7 @@ const AlbumTable = () => {
       key: "stt",
       width: "5%",
       render: (text, record, index) =>
-        pagination.current * pagination.pageSize -
-        pagination.pageSize +
-        index +
-        1,
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Album Image",
@@ -201,18 +205,14 @@ const AlbumTable = () => {
           <Table
             columns={columns}
             dataSource={albums}
-            pagination={false}
+            pagination={{
+              current: pagination.current,
+              total: pagination.total,
+              pageSize: pagination.pageSize,
+              showSizeChanger: true,
+            }}
             onChange={handleTableChange}
             rowKey="id"
-          />
-          <Pagination
-            {...pagination}
-            showSizeChanger
-            onShowSizeChange={(current, pageSize) =>
-              setPagination({ ...pagination, pageSize })
-            }
-            onChange={(page) => setPagination({ ...pagination, current: page })}
-            style={{ marginTop: "20px", textAlign: "right" }}
           />
         </>
       )}

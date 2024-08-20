@@ -4,10 +4,12 @@ import { StepBackwardOutlined, StepForwardOutlined } from "@ant-design/icons";
 import axios from "axios";
 import PropTypes from "prop-types";
 import { IoPause, IoPlay } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const MusicPlayer = ({ songId, songs, onPrev, onNext }) => {
+const MusicPlayer = ({ songId, onPrev, onNext }) => {
+  const navigate = useNavigate();
   const [songData, setSongData] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -93,8 +95,13 @@ const MusicPlayer = ({ songId, songs, onPrev, onNext }) => {
         <span>{formatTime(duration)}</span>
 
         <div className="music-player-info">
-          <Image src={songData.image} width={50} />
-          <span>{songData.name}</span>
+          <Image src={songData.image} width={50} className="cursor-pointer" />
+          <span
+            onClick={() => navigate(`/song/${songData.id}`)}
+            className="cursor-pointer"
+          >
+            {songData.name}
+          </span>
         </div>
       </div>
     )

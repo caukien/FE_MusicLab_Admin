@@ -25,6 +25,14 @@ export const getUserIdFromToken = () => {
 
   return decoded.UserId;
 };
+export const getUserNameFromToken = () => {
+  const token = getToken();
+  if (!token) return null;
+
+  const decoded = jwtDecode(token);
+
+  return decoded.Username;
+};
 
 // Kiểm tra xem token có hết hạn không
 export const isTokenExpired = () => {

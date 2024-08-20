@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Table,
-  Pagination,
   Image,
   Space,
   Button,
@@ -24,7 +23,6 @@ import { useNavigate } from "react-router-dom";
 import MusicPlayer from "./MusicPlayer";
 
 const API_URL = import.meta.env.VITE_API_URL;
-// axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
 const SongTable = () => {
   const [songs, setSongs] = useState([]);
@@ -40,25 +38,32 @@ const SongTable = () => {
   const [isAddSongVisible, setIsAddSongVisible] = useState(false);
   const [userId, setUserId] = useState(getUserIdFromToken());
 
-  //Play song
   const [currentSongId, setCurrentSongId] = useState(null);
   const [currentSongIndex, setCurrentSongIndex] = useState(null);
 
   const navigate = useNavigate();
   const token = getToken();
+
   useEffect(() => {
-    if (!token && isTokenExpired() && !hasAccess(["admin", "producer"])) {
+    if (!token || isTokenExpired() || !hasAccess(["admin", "producer"])) {
       navigate("/login");
     }
   }, [navigate, token]);
 
-  const fetchSongs = async () => {
+  const fetchSongs = async (pageNumber = 1, pageSize = 5) => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}song/GetAllByUserId/${userId}`
+        `${API_URL}song/GetAllByUserId/${userId}?PageNumber=${pageNumber}&PageSize=${pageSize}`
       );
-      setSongs(response.data);
-      setPagination((prev) => ({ ...prev, total: response.data.length }));
+      const { totalPages, currentPage, songs } = response.data;
+
+      setSongs(songs);
+      setPagination({
+        current: currentPage,
+        pageSize,
+        total: totalPages * pageSize,
+      });
     } catch (error) {
       message.error("Failed to load songs");
     } finally {
@@ -69,13 +74,12 @@ const SongTable = () => {
   useEffect(() => {
     if (token) {
       setUserId(getUserIdFromToken());
-      fetchSongs();
+      fetchSongs(1);
     }
-  }, []);
+  }, [token]);
 
   const handleEdit = (record) => {
     setEditingSong(record);
-    // navigate(`/edit/${record.id}`);
     setIsModalVisible(true);
     setSelectedSongId(record.id);
   };
@@ -94,7 +98,7 @@ const SongTable = () => {
             message: "Success",
             description: `The song "${songName}" was deleted successfully.`,
           });
-          fetchSongs(); // Refresh the table after deletion
+          fetchSongs(pagination.current, pagination.pageSize); // Refresh the table after deletion
         } catch (error) {
           notification.error({
             message: "Error",
@@ -106,7 +110,7 @@ const SongTable = () => {
   };
 
   const handleTableChange = (pagination) => {
-    setPagination(pagination);
+    fetchSongs(pagination.current, pagination.pageSize);
   };
 
   const handleAddSong = () => {
@@ -136,10 +140,7 @@ const SongTable = () => {
       key: "stt",
       width: "5%",
       render: (text, record, index) =>
-        pagination.current * pagination.pageSize -
-        pagination.pageSize +
-        index +
-        1,
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
       title: "Song Image",
@@ -174,14 +175,14 @@ const SongTable = () => {
       dataIndex: "albumImage",
       key: "albumImage",
       width: "15%",
-      render: () => "None", // As there is no album data in API response
+      render: () => "None",
     },
     {
       title: "Album",
       dataIndex: "album",
       key: "album",
       width: "20%",
-      render: () => "None", // As there is no album data in API response
+      render: () => "None",
     },
     {
       title: "Action",
@@ -227,18 +228,14 @@ const SongTable = () => {
           <Table
             columns={columns}
             dataSource={songs}
-            pagination={false}
+            pagination={{
+              current: pagination.current,
+              total: pagination.total,
+              pageSize: pagination.pageSize,
+              showSizeChanger: true,
+            }}
             onChange={handleTableChange}
             rowKey="id"
-          />
-          <Pagination
-            {...pagination}
-            showSizeChanger
-            onShowSizeChange={(current, pageSize) =>
-              setPagination({ ...pagination, pageSize })
-            }
-            onChange={(page) => setPagination({ ...pagination, current: page })}
-            style={{ marginTop: "20px", textAlign: "right" }}
           />
         </>
       )}

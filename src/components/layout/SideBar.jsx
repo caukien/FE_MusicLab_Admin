@@ -5,7 +5,7 @@ import { IoAlbumsOutline } from "react-icons/io5";
 import { BiAlbum } from "react-icons/bi";
 import { SlLogout } from "react-icons/sl";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
+import { removeToken } from "../../utils/auth";
 
 const item = [
   {
@@ -49,7 +49,7 @@ const SideBar = () => {
 
   const handleLogout = () => {
     // Remove the token from cookies
-    Cookies.remove("token");
+    removeToken();
 
     // Redirect to login page
     navigate("/login");
