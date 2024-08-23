@@ -184,6 +184,7 @@ const EditSongModal = ({
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [audioFileList, setAudioFileList] = useState([]);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -245,6 +246,10 @@ const EditSongModal = ({
         formData.append("image", fileList[0].originFileObj);
       }
 
+      if (audioFileList.length > 0) {
+        formData.append("link", audioFileList[0].originFileObj);
+      }
+
       await axios.put(`${API_URL}song/${songId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -267,6 +272,10 @@ const EditSongModal = ({
 
   const handleChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
+  };
+
+  const handleAudioChange = ({ fileList: newFileList }) => {
+    setAudioFileList(newFileList);
   };
 
   return (
@@ -353,6 +362,48 @@ const EditSongModal = ({
             />
           </Form.Item>
         )}
+
+        <Form.Item
+          name="audio"
+          label="Upload Song"
+          valuePropName="file"
+          rules={[
+            {
+              required: true,
+              message: "Please upload a song file",
+            },
+            {
+              validator: async (_, file) => {
+                if (!file) {
+                  return Promise.reject(new Error("Please upload a song file"));
+                }
+                const isMP3 = file.type === "audio/mpeg";
+                if (isMP3) {
+                  return Promise.reject(
+                    new Error("Only MP3 or M4A files are allowed")
+                  );
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                  return Promise.reject(
+                    new Error("File must be smaller than 5MB")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Upload
+            listType="picture"
+            maxCount={1}
+            beforeUpload={() => false} // Prevent auto-upload
+            fileList={audioFileList}
+            onRemove={() => setAudioFileList([])}
+            onChange={handleAudioChange}
+          >
+            <Button icon={<UploadOutlined />}>Click to Upload Audio</Button>
+          </Upload>
+        </Form.Item>
       </Form>
     </Modal>
   );

@@ -42,7 +42,7 @@
 .login-container {
   display: flex;
   height: 100vh;
-  background-image: url("album-cover.jpg");
+  background-image: url("/album-cover.jpg");
   background-size: cover;
   background-position: center;
 }
