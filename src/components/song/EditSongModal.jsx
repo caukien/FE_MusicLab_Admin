@@ -369,10 +369,6 @@ const EditSongModal = ({
           valuePropName="file"
           rules={[
             {
-              required: true,
-              message: "Please upload a song file",
-            },
-            {
               validator: async (_, file) => {
                 if (!file) {
                   return Promise.reject(new Error("Please upload a song file"));
