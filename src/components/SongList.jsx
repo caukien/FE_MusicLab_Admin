@@ -116,7 +116,7 @@
 
 // export default SongList;
 
-import { Button, Flex, Typography, Card, Spin, message, Carousel } from "antd";
+import { Button, Flex, Typography, Card, Spin, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -130,8 +130,65 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 
 const { Meta } = Card;
-
 const API_URL = import.meta.env.VITE_API_URL;
+
+const CustomCarousel = ({ items, onItemClick }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 3;
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) =>
+      Math.min(prev + itemsPerPage, items.length - itemsPerPage)
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => Math.max(prev - itemsPerPage, 0));
+  };
+
+  const visibleItems = items.slice(currentIndex, currentIndex + itemsPerPage);
+  const canGoNext = currentIndex + itemsPerPage < items.length;
+  const canGoPrev = currentIndex > 0;
+
+  return (
+    <div className="relative">
+      <div className="flex gap-4 items-center">
+        <Button
+          shape="circle"
+          icon={<LeftOutlined />}
+          onClick={prevSlide}
+          disabled={!canGoPrev}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+        />
+
+        <div className="flex gap-4 mx-10">
+          {visibleItems.map((item) => (
+            <Card
+              key={item.id}
+              className="flex-1"
+              hoverable
+              cover={<img alt={item.name} src={item.image} />}
+              onClick={() => onItemClick(item.id)}
+            >
+              <Meta
+                title={<div style={{ textAlign: "center" }}>{item.name}</div>}
+                description={item.des}
+              />
+            </Card>
+          ))}
+        </div>
+
+        <Button
+          shape="circle"
+          icon={<RightOutlined />}
+          onClick={nextSlide}
+          disabled={!canGoNext}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+        />
+      </div>
+    </div>
+  );
+};
 
 const SongList = () => {
   const [songs, setSongs] = useState([]);
@@ -151,10 +208,10 @@ const SongList = () => {
   const fetchData = async () => {
     try {
       const songResponse = await axios.get(
-        `${API_URL}song/GetAllByUserId/${userId}?PageNumber=1&PageSize=5`
+        `${API_URL}song/GetAllByUserId/${userId}?PageNumber=1&PageSize=10`
       );
       const albumResponse = await axios.get(
-        `${API_URL}album/GetAllByUserId/${userId}?PageNumber=1&PageSize=5`
+        `${API_URL}album/GetAllByUserId/${userId}?PageNumber=1&PageSize=10`
       );
       setSongs(songResponse.data.songs);
       setAlbums(albumResponse.data.albums);
@@ -172,67 +229,18 @@ const SongList = () => {
     }
   }, [userId, token]);
 
-  const CarouselArrow = ({ type, onClick }) => (
-    <Button
-      shape="circle"
-      icon={type === "prev" ? <LeftOutlined /> : <RightOutlined />}
-      onClick={onClick}
-      style={{
-        position: "absolute",
-        top: "50%",
-        transform: "translateY(-50%)",
-        zIndex: 1,
-      }}
-      className={type === "prev" ? "left-1" : "right-1"}
-    />
-  );
-
-  const renderCarousel = (items, title, viewAllLink) => (
-    // <div className="relative">
-    <Carousel
-      arrows
-      prevArrow={<CarouselArrow type="prev" />}
-      nextArrow={<CarouselArrow type="next" />}
-      slidesToShow={3}
-      slidesToScroll={1}
-    >
-      {items.map((item) => (
-        <div key={item.id} className="px-2">
-          <Card
-            className="plant-card"
-            hoverable
-            cover={<img alt="example" src={item.image} />}
-            onClick={() => navigate(`/${title.toLowerCase()}/${item.id}`)}
-          >
-            <Meta title={item.name} description={item.des} />
-          </Card>
-        </div>
-      ))}
-      <div className="px-2">
-        <Card
-          className="plant-card flex items-center justify-center"
-          hoverable
-          onClick={() => navigate(viewAllLink)}
-        >
-          <Typography.Title level={4}>More</Typography.Title>
-        </Card>
-      </div>
-    </Carousel>
-    // </div>
-  );
-
   return (
-    <div>
+    <div className="p-6">
       {loading ? (
-        <div className="!items-center !justify-center flex">
+        <div className="flex items-center justify-center">
           <Spin size="large" />
         </div>
       ) : (
-        <Flex vertical gap="large">
+        <Flex align="start" justify="space-between" gap="large" wrap>
           {/* Your Song */}
-          <Flex vertical gap="small">
-            <Flex align="center" justify="space-between">
-              <Typography.Title level={3} strong className="primary--color">
+          <div style={{ flex: 1 }}>
+            <Flex align="center" justify="space-between" className="mb-4">
+              <Typography.Title level={3} strong className="primary--color m-0">
                 Your Song
               </Typography.Title>
               <Button type="link" className="gray--color">
@@ -240,16 +248,19 @@ const SongList = () => {
               </Button>
             </Flex>
             {songs && songs.length > 0 ? (
-              renderCarousel(songs, "Song", "/song")
+              <CustomCarousel
+                items={songs}
+                onItemClick={(id) => navigate(`/song/${id}`)}
+              />
             ) : (
               <Typography.Text>Bạn chưa có bài hát nào</Typography.Text>
             )}
-          </Flex>
+          </div>
 
           {/* Your Album */}
-          <Flex vertical gap="small">
-            <Flex align="center" justify="space-between">
-              <Typography.Title level={3} strong className="primary--color">
+          <div style={{ flex: 1 }}>
+            <Flex align="center" justify="space-between" className="mb-4">
+              <Typography.Title level={3} strong className="primary--color m-0">
                 Your Album
               </Typography.Title>
               <Button type="link" className="gray--color">
@@ -257,20 +268,30 @@ const SongList = () => {
               </Button>
             </Flex>
             {albums && albums.length > 0 ? (
-              renderCarousel(albums, "Album", "/album")
+              <CustomCarousel
+                items={albums}
+                onItemClick={(id) => navigate(`/album/${id}`)}
+              />
             ) : (
               <Typography.Text>Bạn chưa có album nào</Typography.Text>
             )}
-          </Flex>
+          </div>
         </Flex>
       )}
     </div>
   );
 };
 
-SongList.propTypes = {
-  type: PropTypes.oneOf(["prev", "next"]).isRequired,
-  onClick: PropTypes.func.isRequired,
+CustomCarousel.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
+      des: PropTypes.string,
+    })
+  ).isRequired,
+  onItemClick: PropTypes.func.isRequired,
 };
 
 export default SongList;
