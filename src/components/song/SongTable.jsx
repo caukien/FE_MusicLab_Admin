@@ -57,6 +57,7 @@ const SongTable = () => {
         `${API_URL}song/GetAllByUserId/${userId}?PageNumber=${pageNumber}&PageSize=${pageSize}`
       );
       const { totalPages, currentPage, songs } = response.data;
+console.log(songs);
 
       setSongs(songs);
       setPagination({
@@ -171,11 +172,13 @@ const SongTable = () => {
       ),
     },
     {
-      title: "Album Image",
-      dataIndex: "albumImage",
-      key: "albumImage",
+      title: "Stream",
+      dataIndex: "count",
+      key: "count",
       width: "15%",
-      render: () => "None",
+      render: (text) => (
+        <span>{text}</span> || "None"
+      ),
     },
     {
       title: "Album",

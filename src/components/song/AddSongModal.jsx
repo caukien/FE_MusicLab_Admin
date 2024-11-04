@@ -71,7 +71,7 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
       values.genres.forEach((genreId) => {
         formData.append("genreIds[]", genreId);
       });
-
+      console.log(userId);
       //   if (values.upload && values.upload.file) {
       //     formData.append("image", values.upload.file.originFileObj);
       //   }
