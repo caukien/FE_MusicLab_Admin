@@ -1,46 +1,31 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { hasAccess, setToken } from "../utils/auth";
-import { Form, Input, Button, Card } from "antd";
+import { Form, Input, Button, Card, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
-const Login = () => {
+const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // const token = getToken();
-
-  // useEffect(() => {
-  //   // Check if the token is valid and user has access
-  //   if (token && !isTokenExpired() && hasAccess(["producer"])) {
-  //     navigate("/home");
-  //   }
-
-  //   if (token && !isTokenExpired() && hasAccess(["admin"])) {
-  //     navigate("/user");
-  //   }
-  // }, [navigate, token]);
-
-  const handleLogin = async (values) => {
+  const handleRegister = async (values) => {
     try {
       setLoading(true);
-      const response = await axios.post(`${API_URL}user/login`, values);
-      const token = response.data;
-      setToken(token);
-      if (hasAccess(["admin"])) {
-        navigate("/user");
-      } else if (hasAccess(["producer"])) {
-        navigate("/home");
-      } else {
-        setError("You do not have permission to access this page.");
+      const response = await axios.post(`${API_URL}user/register`, values);
+      if (response != null) {
+        notification.success({
+          message: "Đăng ký thành công",
+          description: "Bạn có thể đăng nhập ngay bây giờ.",
+          placement: "topRight",
+          duration: 3,
+        });
+        navigate("/login");
       }
-      // navigate("/home");
     } catch (err) {
-      setError("Invalid username or password");
+      setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,7 +36,7 @@ const Login = () => {
       <div className="login-form-container">
         <Card className="login-card">
           <Form
-            name="login"
+            name="register"
             initialValues={{
               remember: true,
             }}
@@ -59,7 +44,7 @@ const Login = () => {
             style={{
               maxWidth: 360,
             }}
-            onFinish={handleLogin}
+            onFinish={handleRegister}
           >
             <Form.Item
               name="username"
@@ -97,17 +82,18 @@ const Login = () => {
                 className="login-button"
                 loading={loading}
               >
-                Submit
+                Register
               </Button>
             </Form.Item>
+
             <Form.Item>
               <p style={{ textAlign: "center", color: "white" }}>
-                Chưa có tài khoản?{" "}
+                Đã có tài khoản?{" "}
                 <a
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/login")}
                   style={{ color: "#1890ff" }}
                 >
-                  Đăng ký ngay
+                  Đăng nhập
                 </a>
               </p>
             </Form.Item>
@@ -118,4 +104,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

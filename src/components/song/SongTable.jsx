@@ -45,7 +45,7 @@ const SongTable = () => {
   const token = getToken();
 
   useEffect(() => {
-    if (!token || isTokenExpired() || !hasAccess(["admin", "producer"])) {
+    if (!token || isTokenExpired() || !hasAccess(["producer"])) {
       navigate("/login");
     }
   }, [navigate, token]);
@@ -57,7 +57,6 @@ const SongTable = () => {
         `${API_URL}song/GetAllByUserId/${userId}?PageNumber=${pageNumber}&PageSize=${pageSize}`
       );
       const { totalPages, currentPage, songs } = response.data;
-console.log(songs);
 
       setSongs(songs);
       setPagination({
@@ -176,9 +175,7 @@ console.log(songs);
       dataIndex: "count",
       key: "count",
       width: "15%",
-      render: (text) => (
-        <span>{text}</span> || "None"
-      ),
+      render: (text) => <span>{text}</span> || "None",
     },
     {
       title: "Album",

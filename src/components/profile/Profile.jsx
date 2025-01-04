@@ -35,7 +35,7 @@ const Profile = () => {
   const token = getToken();
 
   useEffect(() => {
-    if (!token && isTokenExpired() && !hasAccess(["admin", "producer"])) {
+    if (!token && isTokenExpired() && !hasAccess(["producer"])) {
       navigate("/login");
     }
   }, [navigate, token]);

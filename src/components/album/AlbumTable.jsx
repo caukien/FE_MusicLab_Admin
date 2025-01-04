@@ -43,7 +43,7 @@ const AlbumTable = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token && isTokenExpired() && !hasAccess(["admin", "producer"])) {
+    if (!token && isTokenExpired() && !hasAccess(["producer"])) {
       navigate("/login");
     }
   }, [navigate]);
