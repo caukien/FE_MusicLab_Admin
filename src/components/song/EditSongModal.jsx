@@ -332,6 +332,28 @@ const EditSongModal = ({
           valuePropName="file"
           // getValueFromEvent={(e) => (Array.isArray(e) ? e : e.fileList)}
           extra="Upload a new image to replace the current one"
+          rules={[
+            {
+              validator: async (_, file) => {
+                if (!file) {
+                  return Promise.resolve();
+                }
+                const isImage =
+                  file[0].type === "image/jpeg" || file[0].type === "image/png";
+                if (!isImage) {
+                  return Promise.reject(
+                    new Error("Only JPG or PNG images are allowed")
+                  );
+                }
+                if (file[0].size > 3 * 1024 * 1024) {
+                  return Promise.reject(
+                    new Error("Image must be smaller than 3MB")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Upload
             listType="picture"
@@ -365,13 +387,13 @@ const EditSongModal = ({
 
         <Form.Item
           name="audio"
-          label="Upload Song"
+          label="Audio file"
           valuePropName="file"
           rules={[
             {
               validator: async (_, file) => {
                 if (!file) {
-                  return Promise.reject(new Error("Please upload a song file"));
+                  return Promise.resolve();
                 }
                 const isMP3 = file.type === "audio/mpeg";
                 if (isMP3) {

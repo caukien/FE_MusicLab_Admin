@@ -9,9 +9,8 @@ import {
   message,
   notification,
   Spin,
-  Flex,
 } from "antd";
-import { UploadOutlined, LoadingOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 import axios from "axios";
 import debounce from "lodash/debounce";
@@ -151,22 +150,13 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
             filterOption={false}
             showSearch
             allowClear
+            notFoundContent={loadgenre ? <Spin size="small" /> : null}
           >
-            {loadgenre ? (
-              <>
-                <Flex align="center" justify="center">
-                  <Spin indicator={<LoadingOutlined spin />} />
-                </Flex>
-              </>
-            ) : (
-              <>
-                {genres.map((genre) => (
-                  <Option key={genre.id} value={genre.id}>
-                    {genre.name}
-                  </Option>
-                ))}
-              </>
-            )}
+            {genres.map((genre) => (
+              <Option key={genre.id} value={genre.id}>
+                {genre.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -175,6 +165,30 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
           label="Upload Song Image"
           valuePropName="file"
           extra="Upload an image for the song"
+          rules={[
+            {
+              validator: async (_, file) => {
+                if (!file || file.length === 0) {
+                  return Promise.reject(
+                    new Error("Please upload a song image")
+                  );
+                }
+                const isImage =
+                  file[0].type === "image/jpeg" || file[0].type === "image/png";
+                if (!isImage) {
+                  return Promise.reject(
+                    new Error("Only JPG or PNG images are allowed")
+                  );
+                }
+                if (file[0].size > 3 * 1024 * 1024) {
+                  return Promise.reject(
+                    new Error("Image must be smaller than 3MB")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Upload
             listType="picture"
@@ -200,10 +214,6 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
           label="Upload Song"
           valuePropName="file"
           rules={[
-            {
-              required: true,
-              message: "Please upload a song file",
-            },
             {
               validator: async (_, file) => {
                 if (!file) {

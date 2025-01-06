@@ -400,6 +400,28 @@ const EditAlbumModal = ({
           label="Upload Album Image"
           valuePropName="file"
           extra="Upload a new image to replace the current one"
+          rules={[
+            {
+              validator: async (_, file) => {
+                if (!file) {
+                  return Promise.resolve();
+                }
+                const isImage =
+                  file[0].type === "image/jpeg" || file[0].type === "image/png";
+                if (!isImage) {
+                  return Promise.reject(
+                    new Error("Only JPG or PNG images are allowed")
+                  );
+                }
+                if (file[0].size > 2 * 1024 * 1024) {
+                  return Promise.reject(
+                    new Error("Image must be smaller than 2MB")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Upload
             listType="picture"
