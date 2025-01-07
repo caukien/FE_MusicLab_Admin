@@ -55,7 +55,6 @@ const Profile = () => {
       form.setFieldsValue({
         name: userData.name,
         country: userData.country,
-        password: userData.password,
       });
 
       setAvatarUrl(userData.image);

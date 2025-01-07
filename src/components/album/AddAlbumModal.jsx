@@ -213,26 +213,8 @@ const AddAlbumModal = ({ visible, onClose, refreshAlbums }) => {
           extra="Upload a new image for the album"
           rules={[
             {
-              validator: async (_, file) => {
-                if (!file || file.length === 0) {
-                  return Promise.reject(
-                    new Error("Please upload a album image")
-                  );
-                }
-                const isImage =
-                  file[0].type === "image/jpeg" || file[0].type === "image/png";
-                if (!isImage) {
-                  return Promise.reject(
-                    new Error("Only JPG or PNG images are allowed")
-                  );
-                }
-                if (file[0].size > 2 * 1024 * 1024) {
-                  return Promise.reject(
-                    new Error("Image must be smaller than 2MB")
-                  );
-                }
-                return Promise.resolve();
-              },
+              required: true,
+              message: "Please select a image",
             },
           ]}
         >
@@ -241,8 +223,22 @@ const AddAlbumModal = ({ visible, onClose, refreshAlbums }) => {
             maxCount={1}
             fileList={fileList}
             onRemove={() => setFileList([])}
-            beforeUpload={() => false} // Prevent auto-upload
             onChange={handleChange}
+            beforeUpload={(file) => {
+              const isImage =
+                file.type === "image/jpeg" ||
+                file.type === "image/png" ||
+                file.type === "image/jpg";
+              if (!isImage) {
+                message.error("Only JPG or PNG images are allowed");
+                return Upload.LIST_IGNORE;
+              }
+              if (file.size > 3 * 1024 * 1024) {
+                message.error("Image must be smaller than 3MB");
+                return Upload.LIST_IGNORE;
+              }
+              return false;
+            }}
           >
             <Button icon={<UploadOutlined />}>Click to Upload</Button>
           </Upload>

@@ -70,7 +70,6 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
       values.genres.forEach((genreId) => {
         formData.append("genreIds[]", genreId);
       });
-      console.log(userId);
       //   if (values.upload && values.upload.file) {
       //     formData.append("image", values.upload.file.originFileObj);
       //   }
@@ -167,33 +166,29 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
           extra="Upload an image for the song"
           rules={[
             {
-              validator: async (_, file) => {
-                if (!file || file.length === 0) {
-                  return Promise.reject(
-                    new Error("Please upload a song image")
-                  );
-                }
-                const isImage =
-                  file[0].type === "image/jpeg" || file[0].type === "image/png";
-                if (!isImage) {
-                  return Promise.reject(
-                    new Error("Only JPG or PNG images are allowed")
-                  );
-                }
-                if (file[0].size > 3 * 1024 * 1024) {
-                  return Promise.reject(
-                    new Error("Image must be smaller than 3MB")
-                  );
-                }
-                return Promise.resolve();
-              },
+              required: true,
+              message: "Please select a image",
             },
           ]}
         >
           <Upload
             listType="picture"
             maxCount={1}
-            beforeUpload={() => false} // Prevent auto-upload
+            beforeUpload={(file) => {
+              const isImage =
+                file.type === "image/jpeg" ||
+                file.type === "image/png" ||
+                file.type === "image/jpg";
+              if (!isImage) {
+                message.error("Only JPG or PNG images are allowed");
+                return Upload.LIST_IGNORE;
+              }
+              if (file.size > 3 * 1024 * 1024) {
+                message.error("Image must be smaller than 3MB");
+                return Upload.LIST_IGNORE;
+              }
+              return false;
+            }}
             // onChange={(info) => {
             //   if (info.file.status === "uploading") {
             //     setUploading(true);
@@ -215,30 +210,30 @@ const AddSong = ({ visible, onClose, refreshSongs }) => {
           valuePropName="file"
           rules={[
             {
-              validator: async (_, file) => {
-                if (!file) {
-                  return Promise.reject(new Error("Please upload a song file"));
-                }
-                const isMP3 = file.type === "audio/mpeg";
-                if (isMP3) {
-                  return Promise.reject(
-                    new Error("Only MP3 or M4A files are allowed")
-                  );
-                }
-                if (file.size > 5 * 1024 * 1024) {
-                  return Promise.reject(
-                    new Error("File must be smaller than 5MB")
-                  );
-                }
-                return Promise.resolve();
-              },
+              required: true,
+              message: "Select a audio file",
             },
           ]}
         >
           <Upload
             listType="picture"
             maxCount={1}
-            beforeUpload={() => false} // Prevent auto-upload
+            beforeUpload={(file) => {
+              const isAudio = file.type === "audio/mpeg";
+
+              if (!isAudio) {
+                message.error("Only MP3 or M4A audio files are allowed");
+                return Upload.LIST_IGNORE;
+              }
+
+              // Kiểm tra kích thước file
+              if (file.size > 5 * 1024 * 1024) {
+                message.error("File must be smaller than 5MB");
+                return Upload.LIST_IGNORE;
+              }
+
+              return false; // Chặn tự động upload
+            }}
             fileList={audioFileList}
             onRemove={() => setAudioFileList([])}
             onChange={handleAudioChange}

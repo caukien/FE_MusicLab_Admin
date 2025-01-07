@@ -334,24 +334,8 @@ const EditSongModal = ({
           extra="Upload a new image to replace the current one"
           rules={[
             {
-              validator: async (_, file) => {
-                if (!file) {
-                  return Promise.resolve();
-                }
-                const isImage =
-                  file[0].type === "image/jpeg" || file[0].type === "image/png";
-                if (!isImage) {
-                  return Promise.reject(
-                    new Error("Only JPG or PNG images are allowed")
-                  );
-                }
-                if (file[0].size > 3 * 1024 * 1024) {
-                  return Promise.reject(
-                    new Error("Image must be smaller than 3MB")
-                  );
-                }
-                return Promise.resolve();
-              },
+              required: true,
+              message: "Please select a image",
             },
           ]}
         >
@@ -361,7 +345,6 @@ const EditSongModal = ({
             fileList={fileList}
             onRemove={() => setFileList([])}
             // valuePropName="file"
-            beforeUpload={() => false} // Prevent auto-upload
             onChange={handleChange}
             // onChange={(info) => {
             //   if (info.file.status === "uploading") {
@@ -370,6 +353,21 @@ const EditSongModal = ({
             //     setUploading(false);
             //   }
             // }}
+            beforeUpload={(file) => {
+              const isImage =
+                file.type === "image/jpeg" ||
+                file.type === "image/png" ||
+                file.type === "image/jpg";
+              if (!isImage) {
+                message.error("Only JPG or PNG images are allowed");
+                return Upload.LIST_IGNORE; // Bỏ qua file này
+              }
+              if (file.size > 3 * 1024 * 1024) {
+                message.error("Image must be smaller than 3MB");
+                return Upload.LIST_IGNORE; // Bỏ qua file này
+              }
+              return false;
+            }}
           >
             <Button icon={<UploadOutlined />}>Click to Upload</Button>
           </Upload>
@@ -391,33 +389,33 @@ const EditSongModal = ({
           valuePropName="file"
           rules={[
             {
-              validator: async (_, file) => {
-                if (!file) {
-                  return Promise.resolve();
-                }
-                const isMP3 = file.type === "audio/mpeg";
-                if (isMP3) {
-                  return Promise.reject(
-                    new Error("Only MP3 or M4A files are allowed")
-                  );
-                }
-                if (file.size > 5 * 1024 * 1024) {
-                  return Promise.reject(
-                    new Error("File must be smaller than 5MB")
-                  );
-                }
-                return Promise.resolve();
-              },
+              required: true,
+              message: "Select a audio file",
             },
           ]}
         >
           <Upload
             listType="picture"
             maxCount={1}
-            beforeUpload={() => false} // Prevent auto-upload
             fileList={audioFileList}
             onRemove={() => setAudioFileList([])}
             onChange={handleAudioChange}
+            beforeUpload={(file) => {
+              const isAudio = file.type === "audio/mpeg";
+
+              if (!isAudio) {
+                message.error("Only MP3 or M4A audio files are allowed");
+                return Upload.LIST_IGNORE;
+              }
+
+              // Kiểm tra kích thước file
+              if (file.size > 5 * 1024 * 1024) {
+                message.error("File must be smaller than 5MB");
+                return Upload.LIST_IGNORE;
+              }
+
+              return false; // Chặn tự động upload
+            }}
           >
             <Button icon={<UploadOutlined />}>Click to Upload Audio</Button>
           </Upload>
